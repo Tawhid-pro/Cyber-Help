@@ -1,0 +1,69 @@
+<?php 
+session_start();
+if (!isset($_SESSION['uname'])) {
+    header("Location: login.html");
+    exit();
+}
+
+// Fetch user info from the database
+include 'db-connect.php';
+$username = $_SESSION['uname'];
+$sql = "SELECT * FROM users WHERE uname = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $username);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Info</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Cyber Help</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="success-stories.html">Success Stories</a></li>
+                <li><a href="contact.html">Contact Us</a></li>
+                <li><a href="logout.php">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="user-info-section">
+        <h2>User Information</h2>
+        <form id="userForm" action="update-user.php" method="POST">
+            <label for="uname">Username:</label>
+            <input type="text" id="uname" name="uname" value="<?php echo $user['uname']; ?>" required readonly>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="<?php echo $user['email']; ?>" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" placeholder="Enter new password (optional)">
+
+            <button type="submit">Update Info</button>
+        </form>
+        <button id="deleteAccount" class="delete-btn">Delete Account</button>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 Cyber Help. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.getElementById('deleteAccount').addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                window.location.href = 'delete-user.php';
+            }
+        });
+    </script>
+</body>
+</html>
